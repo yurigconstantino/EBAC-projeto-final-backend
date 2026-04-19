@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
+
 from pathlib import Path
 from datetime import timedelta
 
@@ -42,6 +44,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "accounts",
     "posts",
+    "core",
 ]
 
 MIDDLEWARE = [
@@ -98,6 +101,9 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 
 # Password validation
