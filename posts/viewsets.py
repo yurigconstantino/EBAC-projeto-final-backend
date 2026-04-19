@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 
 from .models import Post, Like, Comment
@@ -13,6 +14,7 @@ class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all().order_by("-created_at")
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -38,7 +40,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
         post = self.get_object()
 
-        serializer = CommentSerializer(data=request.data)
+        serializer = CommentSerializer(data=request.data, context={"request": request})
 
         serializer.is_valid(raise_exception=True)
 
@@ -53,6 +55,8 @@ class PostViewSet(viewsets.ModelViewSet):
 
         comments = post.comments.all().order_by("created_at")
 
-        serializer = CommentSerializer(comments, many=True)
+        serializer = CommentSerializer(
+            comments, many=True, context={"request": request}
+        )
 
         return Response(serializer.data)

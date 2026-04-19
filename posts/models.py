@@ -1,8 +1,14 @@
 from django.db import models
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 User = settings.AUTH_USER_MODEL
+
+
+def validate_image_file(file):
+    if not file.content_type.startswith("image/"):
+        raise ValidationError("Arquivo deve ser uma imagem")
 
 
 class Post(models.Model):
@@ -10,7 +16,9 @@ class Post(models.Model):
 
     content = models.TextField(blank=True)
 
-    image = models.ImageField(upload_to="posts/", null=True, blank=True)
+    image = models.ImageField(
+        upload_to="posts/", null=True, blank=True, validators=[validate_image_file]
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -35,6 +43,9 @@ class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
 
     content = models.TextField()
+
+    username = models.CharField(max_length=150, blank=True)
+    avatar = models.ImageField(upload_to="avatars/", null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
