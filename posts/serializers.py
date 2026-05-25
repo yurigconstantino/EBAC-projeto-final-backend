@@ -17,6 +17,8 @@ class PostSerializer(serializers.ModelSerializer):
 
     comments_count = serializers.IntegerField(source="comments.count", read_only=True)
 
+    is_following_author = serializers.SerializerMethodField()
+
     class Meta:
         model = Post
         fields = [
@@ -24,6 +26,7 @@ class PostSerializer(serializers.ModelSerializer):
             "author",
             "author_username",
             "author_avatar",
+            "is_following_author",
             "content",
             "image",
             "image_url",
@@ -66,6 +69,18 @@ class PostSerializer(serializers.ModelSerializer):
 
         return value
 
+    def get_is_following_author(self, obj):
+
+        request = self.context.get("request")
+
+        if not request or request.user.is_anonymous:
+            return False
+
+        if obj.author == request.user:
+            return False
+
+        return obj.author.followers.filter(followers=request.user).exists()
+
 
 class CommentSerializer(serializers.ModelSerializer):
 
@@ -91,5 +106,5 @@ class CommentSerializer(serializers.ModelSerializer):
 
         if obj.user.avatar and request:
             return request.build_absolute_uri(obj.user.avatar.url)
-        
+
         return None

@@ -4,9 +4,11 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
 from django.contrib.auth import get_user_model
+from .models import Follow
 
 # Create your views here.
 User = get_user_model()
+
 
 class RegisterViewSet(viewsets.ModelViewSet):
 
@@ -18,11 +20,12 @@ class RegisterViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        return Response({
-            "message": "Usuario criado",
-            "user": serializer.data
-        }, status=status.HTTP_201_CREATED)
-    
+        return Response(
+            {"message": "Usuario criado", "user": serializer.data},
+            status=status.HTTP_201_CREATED,
+        )
+
+
 class LoginViewSet(APIView):
 
     def post(self, request):
@@ -31,7 +34,7 @@ class LoginViewSet(APIView):
         selializer.is_valid(raise_exception=True)
 
         return Response(selializer.validated_data, status=status.HTTP_200_OK)
-    
+
 
 class MeViewSet(APIView):
     permission_classes = [IsAuthenticated]
@@ -41,3 +44,62 @@ class MeViewSet(APIView):
         serialiszer = UserSerializer(request.user)
 
         return Response(serialiszer.data)
+
+
+class FollowToggleView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, user_id):
+
+        try:
+            target_user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"erro": "Usuario não encontrado"}, status=404)
+
+        if target_user == request.user:
+            return Response(
+                {
+                    "erro": "Ta de sacanagem que voce quer seguri voce mesmo? Ta carente?"
+                },
+                status=400,
+            )
+
+        follow = Follow.objects.filter(
+            followers=request.user, following=target_user
+        ).first()
+
+        if follow:
+            follow.delete()
+
+            return Response(
+                {"following": False, "followers_count": target_user.followers.count()}
+            )
+
+        Follow.objects.create(followers=request.user, following=target_user)
+
+        return Response(
+            {"following": True, "followers_count": target_user.followers.count()}
+        )
+
+
+class FollowStatusView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id):
+        try:
+            target_user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"erro": "Usuario não encontrado"}, status=404)
+
+        is_following = Follow.objects.filter(
+            follower=request.user, following=target_user
+        ).exists()
+
+        return Response(
+            {
+                "following": is_following,
+                "followers_count": target_user.followers.count(),
+            }
+        )
