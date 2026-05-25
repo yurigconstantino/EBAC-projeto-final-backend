@@ -5,7 +5,8 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 
-from .models import Post, Like, Comment
+from .models import Post, Like
+from accounts.models import Follow
 from .serializers import PostSerializer, CommentSerializer
 
 
@@ -53,10 +54,32 @@ class PostViewSet(viewsets.ModelViewSet):
 
         post = self.get_object()
 
-        comments = post.comments.all().order_by("created_at")
+        comments = post.comments.all().order_by("-created_at")
 
         serializer = CommentSerializer(
             comments, many=True, context={"request": request}
         )
 
         return Response(serializer.data)
+    
+    def get_serializer_context(self):
+
+        context = super().get_serializer_context()
+
+        context["request"] = self.request
+        return context
+
+    def get_queryset(self):
+        
+        user = self.request.user
+        following_ids = Follow.objects.filter(
+            followers=user
+        ).values_list("following_id", flat=True)
+
+        queryset = Post.objects.filter(
+            author__id__in=following_ids
+        ) | Post.objects.filter(
+            author=user
+        )
+
+        return queryset.order_by("-created_at")

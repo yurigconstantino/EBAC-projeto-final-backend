@@ -3,7 +3,6 @@ from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.password_validation import validate_password
 
-
 User = get_user_model()
 
 
@@ -56,3 +55,32 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username", "email", "avatar", "bio"]
+
+
+class PublicUserSerializer(serializers.ModelSerializer):
+
+    followers_count = serializers.IntegerField(source="followers.count", read_only=True)
+
+    following_count = serializers.IntegerField(source="following.count", read_only=True)
+
+    is_following = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "avatar",
+            "followers_count",
+            "following_count",
+            "is_following",
+        ]
+
+    def get_is_following(self, obj):
+
+        request = self.context.get("request")
+
+        if not request or request.user.is_anonymos:
+            return False
+
+        return obj.followers.filter(follower=request.user).exists()
