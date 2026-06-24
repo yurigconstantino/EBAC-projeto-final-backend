@@ -84,3 +84,18 @@ class PublicUserSerializer(serializers.ModelSerializer):
             return False
 
         return obj.followers.filter(follower=request.user).exists()
+
+
+class FollowingUserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "avatar"]
+
+    def get_avatar(self, obj):
+
+        request = self.context.get("request")
+
+        if obj.avatar and request:
+            return request.build_absolute_uri(obj.avatar.url)
+        return None

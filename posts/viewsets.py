@@ -8,13 +8,14 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from .models import Post, Like
 from accounts.models import Follow
 from .serializers import PostSerializer, CommentSerializer
+from .permissions import IsOwnerOrReadOnly
 
 
 class PostViewSet(viewsets.ModelViewSet):
 
     queryset = Post.objects.all().order_by("-created_at")
     serializer_class = PostSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def perform_create(self, serializer):
@@ -61,7 +62,7 @@ class PostViewSet(viewsets.ModelViewSet):
         )
 
         return Response(serializer.data)
-    
+
     def get_serializer_context(self):
 
         context = super().get_serializer_context()
@@ -70,16 +71,42 @@ class PostViewSet(viewsets.ModelViewSet):
         return context
 
     def get_queryset(self):
-        
+
         user = self.request.user
-        following_ids = Follow.objects.filter(
-            followers=user
-        ).values_list("following_id", flat=True)
+        following_ids = Follow.objects.filter(followers=user).values_list(
+            "following_id", flat=True
+        )
 
         queryset = Post.objects.filter(
             author__id__in=following_ids
-        ) | Post.objects.filter(
-            author=user
-        )
+        ) | Post.objects.filter(author=user)
 
         return queryset.order_by("-created_at")
+
+    @action(detail=False, methods=["get"])
+    def explore(self, request):
+
+        posts = (
+            Post.objects.select_related("author")
+            .prefetch_related("likes", "comments")
+            .exclude(author=request.user)
+            .order_by("-created_at")
+        )
+
+        serializer = self.get_serializer(posts, many=True)
+
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"])
+    def my_posts(self, request):
+
+        posts = (
+            Post.objects.filter(author=request.user)
+            .select_related("author")
+            .prefetch_related("likes", "comments")
+            .order_by("-created_at")
+        )
+
+        serializer = self.get_serializer(posts, many=True)
+
+        return Response(serializer.data)
