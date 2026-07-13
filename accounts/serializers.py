@@ -96,6 +96,34 @@ class FollowingUserSerializer(serializers.ModelSerializer):
 
         request = self.context.get("request")
 
-        if obj.avatar and request:
+        if obj.avatar:
             return request.build_absolute_uri(obj.avatar.url)
         return None
+
+
+class UpdateProfileSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False)
+
+    class Meta:
+        model = User
+
+        fields = ["username", "email", "password", "avatar"]
+
+    def update(self, instance, validated_data):
+
+        password = validated_data.pop("password", None)
+
+        instance.username = validated_data.get("username", instance.username)
+        instance.email = validated_data.get("email", instance.email)
+
+        avatar = validated_data.get("avatar")
+
+        if avatar:
+            instance.avatar = avatar
+
+        if password:
+            instance.set_password(password)
+
+        instance.save()
+
+        return instance

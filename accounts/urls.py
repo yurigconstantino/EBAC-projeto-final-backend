@@ -7,6 +7,7 @@ from .viewsets import (
     FollowToggleView,
     FollowStatusView,
     FollowingListView,
+    UpdateProfileView,
 )
 
 router = DefaultRouter()
@@ -19,4 +20,5 @@ urlpatterns = [
     path("follow/<int:user_id>/", FollowToggleView.as_view(), name="follow-toggle"),
     path("follow/<int:user_id>/", FollowStatusView.as_view(), name="follow-status"),
     path("following/", FollowingListView.as_view(), name="following-list"),
+    path("me/update/", UpdateProfileView.as_view(), name="update-profile"),
 ]
