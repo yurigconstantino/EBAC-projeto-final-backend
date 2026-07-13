@@ -2,7 +2,13 @@ from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
+from .serializers import (
+    RegisterSerializer,
+    LoginSerializer,
+    UserSerializer,
+    FollowingUserSerializer,
+    UpdateProfileSerializer,
+)
 from django.contrib.auth import get_user_model
 from .models import Follow
 
@@ -103,3 +109,38 @@ class FollowStatusView(APIView):
                 "followers_count": target_user.followers.count(),
             }
         )
+
+
+class FollowingListView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        follows = Follow.objects.filter(followers=request.user).select_related(
+            "following"
+        )
+
+        users = [follow.following for follow in follows]
+
+        serializer = FollowingUserSerializer(users, many=True, context={"request": request})
+
+        return Response(serializer.data)
+
+
+class UpdateProfileView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+
+        serializer = UpdateProfileSerializer(
+            request.user, data=request.data, partial=True
+        )
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=400)

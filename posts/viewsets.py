@@ -3,11 +3,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 
 from .models import Post, Like
 from accounts.models import Follow
 from .serializers import PostSerializer, CommentSerializer
+from .permissions import IsOwnerOrReadOnly
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -61,7 +64,7 @@ class PostViewSet(viewsets.ModelViewSet):
         )
 
         return Response(serializer.data)
-    
+
     def get_serializer_context(self):
 
         context = super().get_serializer_context()
@@ -70,16 +73,64 @@ class PostViewSet(viewsets.ModelViewSet):
         return context
 
     def get_queryset(self):
-        
-        user = self.request.user
-        following_ids = Follow.objects.filter(
-            followers=user
-        ).values_list("following_id", flat=True)
 
-        queryset = Post.objects.filter(
-            author__id__in=following_ids
-        ) | Post.objects.filter(
-            author=user
+        queryset = Post.objects.select_related("author").prefetch_related(
+            "likes", "comments"
         )
 
+        # Apenas para o feed
+        if self.action == "list":
+
+            following_ids = Follow.objects.filter(
+                followers=self.request.user
+            ).values_list("following_id", flat=True)
+
+            queryset = queryset.filter(
+                Q(author=self.request.user) | Q(author__id__in=following_ids)
+            )
+
         return queryset.order_by("-created_at")
+
+    @action(detail=True, methods=["post"])
+    def like(self, request, pk=None):
+
+        post = get_object_or_404(Post, pk=pk)
+
+        like = Like.objects.filter(post=post, user=request.user).first()
+
+        if like:
+            like.delete()
+            liked = False
+        else:
+            Like.objects.create(post=post, user=request.user)
+            liked = True
+
+        return Response({"liked": liked, "likes_count": post.likes.count()})
+
+    @action(detail=False, methods=["get"])
+    def explore(self, request):
+
+        posts = (
+            Post.objects.select_related("author")
+            .prefetch_related("likes", "comments")
+            .exclude(author=request.user)
+            .order_by("-created_at")
+        )
+
+        serializer = self.get_serializer(posts, many=True)
+
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"])
+    def my_posts(self, request):
+
+        posts = (
+            Post.objects.filter(author=request.user)
+            .select_related("author")
+            .prefetch_related("likes", "comments")
+            .order_by("-created_at")
+        )
+
+        serializer = self.get_serializer(posts, many=True)
+
+        return Response(serializer.data)
