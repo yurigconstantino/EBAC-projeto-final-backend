@@ -66,7 +66,7 @@ class FollowToggleView(APIView):
         if target_user == request.user:
             return Response(
                 {
-                    "erro": "Ta de sacanagem que voce quer seguri voce mesmo? Ta carente?"
+                    "erro": "Você não pode seguir você mesmo"
                 },
                 status=400,
             )
