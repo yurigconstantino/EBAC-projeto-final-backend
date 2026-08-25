@@ -28,7 +28,7 @@ SECRET_KEY = "django-insecure-#gx(u14ab(+ikzxcdv!5mkj4d1aa!1+sjddkf1vf2!suj*0q#m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["ebac-projeto-final-backend.onrender.com"]
+ALLOWED_HOSTS = ["ebac-projeto-final-backend.onrender.com",]
 
 
 # Application definition
@@ -89,9 +89,9 @@ SIMPLE_JWT = {
 
 WSGI_APPLICATION = "mysite.wsgi.application"
 AUTH_USER_MODEL = "accounts.User"
-CORS_ALLOWED_ORIGINS = ["https://ebac-projeto-final-frontend.vercel.app"]
+CORS_ALLOWED_ORIGINS = ["https://ebac-projeto-final-frontend.vercel.app",]
 
-CSRF_TRUSTED_ORIGINS = ["https://ebac-projeto-final-frontend.vercel.app"]
+CSRF_TRUSTED_ORIGINS = ["https://ebac-projeto-final-frontend.vercel.app",]
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
