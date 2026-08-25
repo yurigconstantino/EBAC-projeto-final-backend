@@ -89,7 +89,7 @@ SIMPLE_JWT = {
 
 WSGI_APPLICATION = "mysite.wsgi.application"
 AUTH_USER_MODEL = "accounts.User"
-CORS_ALLOWED_ORIGINS = ["https://ebac-projeto-final-frontend.vercel.app", "ebac-projeto-final-frontend-5kbg9kfx9.vercel.app",]
+CORS_ALLOWED_ORIGINS = ["https://ebac-projeto-final-frontend.vercel.app", "https://ebac-projeto-final-frontend-5kbg9kfx9.vercel.app",]
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
