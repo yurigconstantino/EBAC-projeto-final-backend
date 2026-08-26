@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
+import dj_database_url
 
 from pathlib import Path
 from datetime import timedelta
@@ -28,7 +29,9 @@ SECRET_KEY = "django-insecure-#gx(u14ab(+ikzxcdv!5mkj4d1aa!1+sjddkf1vf2!suj*0q#m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["ebac-projeto-final-backend.onrender.com",]
+ALLOWED_HOSTS = [
+    "ebac-projeto-final-backend.onrender.com",
+]
 
 
 # Application definition
@@ -89,16 +92,16 @@ SIMPLE_JWT = {
 
 WSGI_APPLICATION = "mysite.wsgi.application"
 AUTH_USER_MODEL = "accounts.User"
-CORS_ALLOWED_ORIGINS = ["https://ebac-projeto-final-frontend.vercel.app", "https://ebac-projeto-final-frontend-5kbg9kfx9.vercel.app",]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "https://ebac-projeto-final-frontend-5kbg9kfx9.vercel.app",
+]
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    "default": dj_database_url.config(default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
 }
 
 MEDIA_URL = "/media/"
