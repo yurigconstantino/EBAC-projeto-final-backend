@@ -15,15 +15,15 @@ class Command(BaseCommand):
 
         fake = Faker()
 
-        self.stdout.write("🔄 Limpando banco...")
+        self.stdout.write("Limpando banco")
 
         Comment.objects.all().delete()
         Like.objects.all().delete()
         Post.objects.all().delete()
         User.objects.all().delete()
 
-        # 👤 Criar usuários
-        self.stdout.write("👤 Criando usuários...")
+        #Criar usuários
+        self.stdout.write("Criando usuários")
 
         users = []
 
@@ -33,8 +33,8 @@ class Command(BaseCommand):
             )
             users.append(user)
 
-        # 📝 Criar posts
-        self.stdout.write("📝 Criando posts...")
+        #Criar posts
+        self.stdout.write("Criando posts")
 
         posts = []
 
@@ -43,14 +43,14 @@ class Command(BaseCommand):
             for _ in range(random.randint(1, 5)):
 
                 post = Post.objects.create(
-                    author=user, content=fake.text(max_nb_chars=200), image="posts/default.png"
+                    author=user, content=fake.text(max_nb_chars=200)
                 )
 
                 posts.append(post)
 
 
-        # ❤️ Criar likes
-        self.stdout.write("❤️ Criando likes...")
+        #Criar likes
+        self.stdout.write("Criando likes")
 
         for post in posts:
 
@@ -59,8 +59,8 @@ class Command(BaseCommand):
             for user in liked_users:
                 Like.objects.get_or_create(user=user, post=post)
 
-        # 💬 Criar comentários
-        self.stdout.write("💬 Criando comentários...")
+        #Criar comentários
+        self.stdout.write("Criando comentários")
 
         for post in posts:
 
@@ -70,4 +70,4 @@ class Command(BaseCommand):
                     user=random.choice(users), post=post, content=fake.sentence()
                 )
 
-        self.stdout.write(self.style.SUCCESS("✅ Seed finalizado!"))
+        self.stdout.write(self.style.SUCCESS("Seed finalizado!"))
