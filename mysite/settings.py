@@ -28,7 +28,7 @@ SECRET_KEY = "django-insecure-#gx(u14ab(+ikzxcdv!5mkj4d1aa!1+sjddkf1vf2!suj*0q#m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["ebac-projeto-final-backend.onrender.com",]
+ALLOWED_HOSTS = ["ebac-projeto-final-backend-tau.vercel.app",]
 
 
 # Application definition
@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     "rest_framework",
     "accounts",
     "posts",
-    "core",
 ]
 
 MIDDLEWARE = [
