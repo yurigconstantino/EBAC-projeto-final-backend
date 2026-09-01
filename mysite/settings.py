@@ -34,16 +34,17 @@ ALLOWED_HOSTS = ["ebac-projeto-final-backend-tau.vercel.app",]
 # Application definition
 
 INSTALLED_APPS = [
+    "corsheaders",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "corsheaders",
     "rest_framework",
     "accounts",
     "posts",
+    "core",
 ]
 
 MIDDLEWARE = [
@@ -89,7 +90,7 @@ SIMPLE_JWT = {
 
 WSGI_APPLICATION = "mysite.wsgi.application"
 AUTH_USER_MODEL = "accounts.User"
-CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "https://ebac-projeto-final-frontend-h9xswof99.vercel.app",]
+CORS_ALLOWED_ORIGINS = ["http://localhost:5173", "https://ebac-projeto-final-frontend.vercel.app",]
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
